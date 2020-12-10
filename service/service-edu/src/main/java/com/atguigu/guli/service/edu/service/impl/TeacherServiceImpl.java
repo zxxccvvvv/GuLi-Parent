@@ -1,14 +1,23 @@
 package com.atguigu.guli.service.edu.service.impl;
 
+import com.atguigu.guli.service.base.result.R;
+import com.atguigu.guli.service.edu.entity.Course;
 import com.atguigu.guli.service.edu.entity.Teacher;
-import com.atguigu.guli.service.edu.entity.TeacherQuery;
+import com.atguigu.guli.service.edu.entity.query.TeacherQuery;
+import com.atguigu.guli.service.edu.feign.OssFileService;
+import com.atguigu.guli.service.edu.mapper.CourseMapper;
 import com.atguigu.guli.service.edu.mapper.TeacherMapper;
 import com.atguigu.guli.service.edu.service.TeacherService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -52,5 +61,55 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper, Teacher> impl
             queryWrapper.le("join_date", end);
         }
         return baseMapper.selectPage(pageParam, queryWrapper);
+    }
+
+    @Override
+    public List<Map<String, Object>> selectNameListByKey(String key) {
+
+        QueryWrapper<Teacher> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("name");
+        queryWrapper.likeRight("name", key);
+
+        List<Map<String, Object>> list = baseMapper.selectMaps(queryWrapper);
+
+        return list;
+    }
+
+    @Autowired
+    private OssFileService ossFileService;
+
+    @Override
+    public boolean removeAvatarById(String id) {
+        Teacher teacher = baseMapper.selectById(id);
+        if(teacher != null) {
+            String avatar = teacher.getAvatar();
+            if (!StringUtils.isEmpty(avatar)) {
+                //删除图片
+                R r = ossFileService.removeFile(avatar);
+                return r.getSuccess();
+            }
+        }
+        return false;
+    }
+
+    @Autowired
+    private CourseMapper courseMapper;
+
+    /**
+     * 根据讲师id获取讲师详情页数据
+     * @param id
+     * @return
+     */
+    @Override
+    public Map<String, Object> selectTeacherInfoById(String id) {
+        //获取讲师信息
+        Teacher teacher = baseMapper.selectById(id);
+        //根据讲师id获取讲师课程
+        List<Course> courseList =  courseMapper.selectList(new QueryWrapper<Course>().eq("teacher_id", id));
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("teacher", teacher);
+        map.put("courseList", courseList);
+        return map;
     }
 }

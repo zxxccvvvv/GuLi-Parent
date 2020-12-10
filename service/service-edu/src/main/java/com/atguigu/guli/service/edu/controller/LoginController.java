@@ -3,7 +3,7 @@ package com.atguigu.guli.service.edu.controller;
 import com.atguigu.guli.service.base.result.R;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin
+//@CrossOrigin
 @RestController
 @RequestMapping("/user")
 public class LoginController {

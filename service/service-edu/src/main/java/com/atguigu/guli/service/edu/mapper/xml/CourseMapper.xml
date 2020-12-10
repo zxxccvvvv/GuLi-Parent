@@ -1,5 +1,120 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.atguigu.guli.service.edu.mapper.CourseMapper">
+    <select id="selectCourseInfoFormById" resultType="com.atguigu.guli.service.edu.entity.form.CourseInfoForm">
+        SELECT
+        c.`id`,
+        c.`teacher_id`,
+        c.`subject_id`,
+        c.`subject_parent_id`,
+        c.`title`,
+        c.`price`,
+        c.`lesson_num`,
+        c.`cover`,
+        cd.`description`
+        FROM
+        `edu_course` c
+        LEFT JOIN `edu_course_description` cd ON c.id = cd.id
+        WHERE c.id = #{id}
+    </select>
 
+    <select id="selectPageByCourseQuery" resultType="com.atguigu.guli.service.edu.entity.vo.CourseVo">
+        SELECT
+         c.id,
+         c.title,
+         c.lesson_num AS lessonNum,
+         c.price,
+         c.cover,
+         c.buy_count AS buyCount,
+         c.view_count AS viewCount,
+         c.status,
+         c.publish_time AS publishTime,
+         t.name AS teacherName,
+         s1.title AS subjectParentTitle,
+         s2.title AS subjectTitle
+        FROM
+        edu_course c
+        LEFT JOIN edu_teacher t ON c.teacher_id = t.id
+        LEFT JOIN edu_subject s1 ON c.subject_parent_id = s1.id
+        LEFT JOIN edu_subject s2 ON c.subject_id = s2.id
+        ${ew.customSqlSegment}
+    </select>
+    <select id="selectCoursePublishVoById" resultType="com.atguigu.guli.service.edu.entity.vo.CoursePublishVo">
+        SELECT
+        c.id,
+        c.title,
+        c.cover,
+        c.lesson_num AS lessonNum,
+        c.price,
+        t.name AS teacherName,
+        s1.title AS subjectParentTitle,
+        s2.title AS subjectTitle
+        FROM
+        edu_course c
+        LEFT JOIN edu_teacher t ON c.teacher_id = t.id
+        LEFT JOIN edu_subject s1 ON c.subject_parent_id = s1.id
+        LEFT JOIN edu_subject s2 ON c.subject_id = s2.id
+        WHERE c.id = #{id}
+    </select>
+
+    <select id="selectWebCourseVoById" resultType="com.atguigu.guli.service.edu.entity.vo.WebCourseVo">
+        SELECT
+        c.id,
+        c.title,
+        c.cover,
+        CONVERT(c.price, DECIMAL(10,2)) AS price,
+        c.lesson_num AS lessonNum,
+        c.buy_count AS buyCount,
+        c.view_count AS viewCount,
+        cd.description,
+
+        t.id AS teacherId,
+        t.name AS teacherName,
+        t.intro,
+        t.avatar,
+
+        s1.id AS subjectLevelOneId,
+        s1.title AS subjectLevelOne,
+        s2.id AS subjectLevelTwoId,
+        s2.title AS subjectLevelTwo
+
+        FROM
+        edu_course c
+        LEFT JOIN edu_course_description cd ON c.id = cd.id
+        LEFT JOIN edu_teacher t ON c.teacher_id = t.id
+        LEFT JOIN edu_subject s1 ON c.subject_parent_id = s1.id
+        LEFT JOIN edu_subject s2 ON c.subject_id = s2.id
+        WHERE
+        c.id = #{id}
+    </select>
+
+    <select id="selectCourseDtoById" resultType="com.atguigu.guli.service.base.dto.CourseDto">
+        select
+        c.id,
+        c.title,
+        c.price,
+        c.cover,
+        t.name teacherName
+
+        from
+        edu_course c
+        left join edu_teacher t
+        on c.teacher_id = t.id
+        where c.id = #{id}
+    </select>
+
+    <update id="updateViewCountById">
+        UPDATE
+        edu_course
+        SET
+        view_count = view_count + 1
+        WHERE id = #{id}
+    </update>
+    <update id="updateBuyCount">
+        UPDATE
+        edu_course
+        SET
+        buy_count = buy_count + 1
+        WHERE id = #{id}
+    </update>
 </mapper>
